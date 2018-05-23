@@ -21,10 +21,6 @@
 </body>
 <script>
     window.onload = () => {
-        function getRelativeCoords(event) {
-            return { x: event.offsetX, y: event.offsetY };
-        }
-
         var c = document.getElementById("myCanvas");
         var ctx = c.getContext("2d");
 
@@ -81,15 +77,7 @@
         }
 
         function getPosition(event) {
-          var x = event.x;
-          var y = event.y;
-
-          // var canvas = document.getElementById("myCanvas");
-
-          x -= c.offsetLeft;
-          y -= c.offsetTop;
-
-          return { x: x, y: y };
+          return { x: event.offsetX, y: event.offsetY };
         }
 
         function displayPosition(event) {

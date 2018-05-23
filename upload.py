@@ -117,7 +117,7 @@ def cut():
     megafile = BytesIO(urllib.request.urlopen(parroturl).read())
     parrotimg = Image.open(megafile)
     # https://stackoverflow.com/questions/12760389/how-can-i-create-an-empty-nm-png-file-in-python
-    Image.save(parrotpath, save_all=True, append_images=[resize(frame) for frame in ImageSequence.Iterator(im)])
+    Image.new('RGBA').save(parrotpath, save_all=True, append_images=[resize(frame) for frame in ImageSequence.Iterator(im)])
 
     parrotfile = None
     with open(parrotpath,'rb') as fp:
