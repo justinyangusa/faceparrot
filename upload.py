@@ -106,18 +106,17 @@ def cut():
         + '&overlayWidth=' + str(width) + '&overlayHeight=' + str(height) + '&overlayOffsetX=-10&overlayOffsetY=-100')
     print('parroturl:',parroturl)
 
-    width = None
-    height = None
-    def resize(frame):
-        width = 128 # px, const
-        height = width*crop_image.height/crop_image.width # calculated to maintain aspect ratio
-        return frame.resize((width,height), resample=Image.BICUBIC)
-
     # https://stackoverflow.com/questions/7391945/how-do-i-read-image-data-from-a-url-in-python
     megafile = BytesIO(urllib.request.urlopen(parroturl).read())
     parrotimg = Image.open(megafile)
+
+    width = 128 # px, const
+    height = width*parrotimg.height/parrotimg.width # calculated to maintain aspect ratio
+    def resize(frame):
+        return frame.resize((width,height), resample=Image.BICUBIC)
+
     # https://stackoverflow.com/questions/12760389/how-can-i-create-an-empty-nm-png-file-in-python
-    Image.new('RGBA').save(parrotpath, save_all=True, append_images=[resize(frame) for frame in ImageSequence.Iterator(im)])
+    Image.new('RGBA', size=(width,height)).save(parrotpath, save_all=True, append_images=[resize(frame) for frame in ImageSequence.Iterator(im)])
 
     parrotfile = None
     with open(parrotpath,'rb') as fp:
