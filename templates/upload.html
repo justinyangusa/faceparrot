@@ -4,8 +4,11 @@
 <head>
 </head>
 <body>
-    <form method=POST enctype=multipart/form-data action="{{ url_for('upload') }}">
-    	<input type=file name=photo>
+	<a href="https://github.com/justinyangusa/faceparrot"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+	<h3>Make a Parrot</h3>
+	<p>Upload a high-resolution image.</p>
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('upload') }}">
+    	<input type="file" name="photo">
     	<input type="submit">
     </form>
 </body>

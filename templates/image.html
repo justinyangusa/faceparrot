@@ -1,0 +1,189 @@
+<!DoCtYpE hTmL>
+<html>
+<head>
+    <title>Image</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+    <a href="https://github.com/justinyangusa/faceparrot"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+    <!-- <p>This system provides no guarantees.</p> -->
+    <p>{{ filename }}</p>
+    <!-- <br><br> -->
+    <img src="{{ url }}" />
+    <p>H i M y N a m e I s A l a n .</p>
+    <p>This is an HTML5 canvas:</p>
+    <p>Click to draw an outline.</p>
+    <canvas id="myCanvas" style="position: absolute; z-index: 0; border: 1px solid black; cursor: crosshair;">This canvas was not loaded properly. Sad!</canvas>
+    <canvas id="topCanvas" style="position: relative; z-index: 1; border: 1px solid black; cursor: crosshair;">This canvas was not loaded properly. Sad!</canvas>
+    <p>x: <span id="xcoord"></span>, y: <span id="ycoord"></span></p>
+    <img id="cutout"/>
+    <img id="parrot"/>
+</body>
+<script>
+    window.onload = () => {
+        function getRelativeCoords(event) {
+            return { x: event.offsetX, y: event.offsetY };
+        }
+
+        var c = document.getElementById("myCanvas");
+        var ctx = c.getContext("2d");
+
+        var ctop = document.getElementById("topCanvas");
+        var ctxtop = ctop.getContext("2d");
+
+        // var img=document.getElementById("scream");
+        var img;
+
+        var xhist = [];
+        var yhist = [];
+
+        var cutout = document.getElementById("cutout");
+        var parrot = document.getElementById("parrot");
+
+        /* $.ajax({
+            url: "{{ url }}"
+        }).then(function(data) {
+            // console.log(data);
+            img = data;
+        }); */
+
+        // console.log(img);
+        // console.log("hello");
+
+        var image = new Image;
+        image.src = "{{url}}";
+        // console.log("image: ");
+        // console.log(image);
+
+        image.onload = () => {
+            c.width = image.width;
+            c.height = image.height;
+            ctop.width = image.width;
+            ctop.height = image.height;
+
+            ctx.drawImage(image,0,0);
+            // ctx.moveTo(0,0);
+
+            // ctx.lineTo(64,64);
+            // ctx.stroke();
+            // ctx.lineTo(0,128);
+            // ctx.stroke();
+        }
+        // console.log("Yes, I did a draw of an image");
+
+        function getPrevCoords() {
+            var len = xhist.length;
+            if (len === 0) {
+                return {x: undefined, y: undefined};
+                // return {x: 0, y: 0};
+            }
+            return {x: xhist[len-1], y: yhist[len-1]};
+        }
+
+        function getPosition(event) {
+          var x = event.x;
+          var y = event.y;
+
+          // var canvas = document.getElementById("myCanvas");
+
+          x -= c.offsetLeft;
+          y -= c.offsetTop;
+
+          return { x: x, y: y };
+        }
+
+        function displayPosition(event) {
+            var pos = getPosition(event);
+            xcoord.innerHTML = pos.x;
+            ycoord.innerHTML = pos.y;
+            // console.log("x: " + pos.x + ", y: " + pos.y);
+
+            //
+            // ctx.moveTo(0,0);
+            // ctx.lineTo(pos.x, pos.y);
+            // ctx.stroke();
+        }
+
+        function drawLine(event) {
+            var pos = getPosition(event);
+            ctxtop.clearRect(0, 0, ctop.width, ctop.height);
+            // console.log(ctop.width);
+
+            var prev = getPrevCoords();
+            if (prev.x !== undefined && prev.y !== undefined) {
+                ctxtop.beginPath();
+                ctxtop.moveTo(prev.x, prev.y);
+                ctxtop.lineTo(pos.x, pos.y);
+                ctxtop.stroke();
+            }
+        }
+
+        function addPosition(event) {
+            var handle = false;
+            var pos = getPosition(event);
+            xcoord.innerHTML = pos.x;
+            ycoord.innerHTML = pos.y;
+
+            ctxtop.clearRect(0, 0, ctop.width, ctop.height);
+
+            var prev = getPrevCoords();
+            if (prev.x === undefined && prev.y === undefined) {
+                ctx.moveTo(pos.x, pos.y);
+            } else {
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+
+                if (prev.x === pos.x && prev.y == pos.y) {
+                    // our heuristic for a double click (!)
+                    // close out the loop and display the parrot
+                    ctx.lineTo(xhist[0], yhist[0]);
+                    ctx.stroke();
+
+                    // so we can make sure to get the last point's coordinates
+                    handle = true;
+                    // handleCutout();
+
+                    ctop.removeEventListener("mouseup", addPosition);
+                    ctop.removeEventListener("mousemove", drawLine);
+                }
+            }
+            xhist.push(pos.x);
+            yhist.push(pos.y);
+
+            if (handle) { handleCutout(); }
+        }
+
+        function clearPosition(event) {
+            xcoord.innerHTML = "";
+            ycoord.innerHTML = "";
+        }
+        function handleCutout() {
+            // pass
+            // alert("This is a double click and the end of the cutting session!");
+
+            // console.log("Hello, I am about to enter to ajax call!");
+
+            $.ajax({
+                url: "{{ url_for('cut') }}"
+              , data: JSON.stringify({xcoords: xhist, ycoords: yhist, filename: "{{filename}}"})
+              , contentType: 'application/json'
+              , type: 'POST'
+            }).then(function(data) {
+                // console.log("I did a do");
+                cutout.src = data['cutout'];
+                parrot.src = data['parrot'];
+            });
+        }
+
+        var xcoord = document.getElementById("xcoord");
+        var ycoord = document.getElementById("ycoord");
+
+        // c.addEventListener("mousedown", getPosition, false);
+
+        ctop.addEventListener("mousemove", displayPosition, false);
+        ctop.addEventListener("mousemove", drawLine, false);
+        ctop.addEventListener("mouseleave", clearPosition, false);
+        ctop.addEventListener("mouseup", addPosition, false);
+    };
+</script>
+</html>
