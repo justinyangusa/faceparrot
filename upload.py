@@ -111,7 +111,7 @@ def cut():
     parrotimg = Image.open(megafile)
 
     width = 128 # px, const
-    height = width*parrotimg.height/parrotimg.width # calculated to maintain aspect ratio
+    height = int(round(width*parrotimg.height/parrotimg.width)) # calculated to maintain aspect ratio
     def resize(frame):
         return frame.resize((width,height), resample=Image.BICUBIC)
 
